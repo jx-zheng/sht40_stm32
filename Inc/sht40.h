@@ -22,24 +22,69 @@
 #define SHT40_LOW_PREC_MEASURE 0xE0
 #define SHT40_READ_SERIAL      0x89
 #define SHT40_SOFT_RESET       0x94
-#define SHT40_200mW_1S_HEAT    0x39
-#define SHT40_200mW_100MS_HEAT 0x32
-#define SHT40_110mW_1S_HEAT    0x2F
-#define SHT40_110mW_100MS_HEAT 0x24
-#define SHT40_20mW_1S_HEAT     0x1E
-#define SHT40_20mW_100MS_HEAT  0x15
+#define SHT40_200mW_1s_HEAT    0x39
+#define SHT40_200mW_100ms_HEAT 0x32
+#define SHT40_110mW_1s_HEAT    0x2F
+#define SHT40_110mW_100ms_HEAT 0x24
+#define SHT40_20mW_1s_HEAT     0x1E
+#define SHT40_20mW_100ms_HEAT  0x15
 
 /*
- * Sensor Handle
+ * Result/Measurement Struct
  */
 typedef struct {
 
-    /* I2C handle */
-    I2C_HandleTypeDef *i2cHandle;
+    /* Temperature in Celsius */
+    float temperature;
 
-    /* Whether to calculate checksums */
-    bool checksums;
+    /* Percentage relative humidity */
+    float rel_humidity;
 
-} SHT40;
+} SHT40_Measurement;
+
+/*
+ * Measurement Precision Levels
+ */
+typedef enum {
+    HIGH_PRECISION, /* Low repeatability */
+    MED_PRECISION, /* Medium repeatability */
+    LOW_PRECISION /* High repeatability */
+} SHT40_Precision;
+
+/*
+ * Heater Duration and Power Options
+ */
+typedef enum {
+    HIGH_POWER_1s      = SHT40_200mW_1s_HEAT,
+    HIGH_POWER_100ms   = SHT40_200mW_100ms_HEAT,
+    MEDIUM_POWER_1s    = SHT40_110mW_1s_HEAT,
+    MEDIUM_POWER_100ms = SHT40_110mW_100ms_HEAT,
+    LOW_POWER_1s       = SHT40_20mW_1s_HEAT,
+    LOW_POWER_100ms    = SHT40_20mW_100ms_HEAT
+} SHT40_HeaterOption;
+
+/*
+ * Initialization
+ * Determines whether a successful I2C connection has been made by reading
+ * the serial number of the device and calculating the CRC8 checksum
+ */
+HAL_StatusTypeDef SHT40_Initialize(const I2C_HandleTypeDef* i2cHandle);
+
+/*
+ * Measurement-Taking
+ */
+HAL_StatusTypeDef SHT40_Measure(const I2C_HandleTypeDef* i2cHandle, SHT40_Measurement* result, SHT40_Precision precision);
+
+/*
+ * Heater Control
+ * SHT40_Measurement is optional (may be provided as NULL)
+ */
+HAL_StatusTypeDef SHT40_Heat(const I2C_HandleTypeDef* i2cHandle, SHT40_Measurement* result, SHT40_HeaterOption option);
+
+/*
+ * Reset/Serial
+ */
+HAL_StatusTypeDef SHT40_SoftReset(const I2C_HandleTypeDef* i2cHandle);
+uint8_t SHT40_ReadSerial(const I2C_HandleTypeDef* i2cHandle);
 
 #endif /* INC_SHT40_H_ */
