@@ -85,6 +85,6 @@ HAL_StatusTypeDef SHT40_Heat(const I2C_HandleTypeDef* i2cHandle, SHT40_Measureme
  * Reset/Serial
  */
 HAL_StatusTypeDef SHT40_SoftReset(const I2C_HandleTypeDef* i2cHandle);
-uint8_t SHT40_ReadSerial(const I2C_HandleTypeDef* i2cHandle);
+uint32_t SHT40_ReadSerial(const I2C_HandleTypeDef* i2cHandle);
 
 #endif /* INC_SHT40_H_ */
