@@ -51,13 +51,6 @@ static const uint8_t CRC8_TABLE[256] = {
 };
 
 /*
- * Initialization
- */
-HAL_StatusTypeDef SHT40_Initialize(const I2C_HandleTypeDef* i2cHandle) {
-
-}
-
-/*
  * Measurement-Taking
  */
 HAL_StatusTypeDef SHT40_Measure(const I2C_HandleTypeDef* i2cHandle, SHT40_Measurement* result, SHT40_Precision precision) {
@@ -82,7 +75,17 @@ HAL_StatusTypeDef SHT40_SoftReset(const I2C_HandleTypeDef* i2cHandle) {
  * Serial
  */
 uint32_t SHT40_ReadSerial(const I2C_HandleTypeDef* i2cHandle) {
+    static const uint8_t command = SHT40_READ_SERIAL;
+    uint8_t serial_response[6];
 
+    if(
+        HAL_I2C_Master_Transmit(i2cHandle, SHT40_I2C_ADDR, &command, 1, SHT40_I2C_TIMEOUT) == HAL_OK &&
+        HAL_I2C_Master_Receive(i2cHandle, SHT40_I2C_ADDR, serial_response, SHT40_I2C_RESP_LEN, SHT40_I2C_TIMEOUT) == HAL_OK
+    ) {
+        // TODO
+    } else {
+        return HAL_ERROR;
+    }
 }
 
 /*

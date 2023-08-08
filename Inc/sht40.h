@@ -10,9 +10,11 @@
 #include "stm32f4xx_hal.h"
 
 /*
- * I2C Address
+ * I2C Communication
  */
 #define SHT40_I2C_ADDR (0x44 << 1)
+#define SHT40_I2C_TIMEOUT 100 /* 100 ms */
+#define SHT40_I2C_RESP_LEN 6
 
 /*
  * Commands
