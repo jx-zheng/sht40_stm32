@@ -60,7 +60,7 @@ HAL_StatusTypeDef SHT40_Measure(const I2C_HandleTypeDef* i2cHandle, SHT40_Measur
 /*
  * Heater Control
  */
-HAL_StatusTypeDef SHT40_Heat(const I2C_HandleTypeDef* i2cHandle, SHT40_Measurement* result, SHT40_HeaterOption option) {
+HAL_StatusTypeDef SHT40_Heat(const I2C_HandleTypeDef* i2cHandle, SHT40_Measurement* result, SHT40_HeaterOption heat_option) {
 
 }
 
@@ -68,13 +68,19 @@ HAL_StatusTypeDef SHT40_Heat(const I2C_HandleTypeDef* i2cHandle, SHT40_Measureme
  * Reset
  */
 HAL_StatusTypeDef SHT40_SoftReset(const I2C_HandleTypeDef* i2cHandle) {
+    static const uint8_t command = SHT40_SOFT_RESET;
 
+    if( HAL_I2C_Master_Transmit(i2cHandle, SHT40_I2C_ADDR, &command, 1, SHT40_I2C_TIMEOUT) != HAL_OK ) {
+        return HAL_ERROR;
+    } else {
+        return HAL_OK;
+    }
 }
 
 /*
  * Serial
  */
-uint32_t SHT40_ReadSerial(const I2C_HandleTypeDef* i2cHandle) {
+HAL_StatusTypeDef SHT40_ReadSerial(const I2C_HandleTypeDef* i2cHandle, uint32_t* result) {
     static const uint8_t command = SHT40_READ_SERIAL;
     uint8_t serial_response[6];
 
@@ -89,7 +95,8 @@ uint32_t SHT40_ReadSerial(const I2C_HandleTypeDef* i2cHandle) {
     uint16_t serial_lsb = serial_response[3] << 8 | serial_response[4];
 
     if( verify_checksum(serial_msb, serial_response[2]) && verify_checksum(serial_lsb, serial_response[5]) ) {
-        return ((uint32_t)serial_msb << 16) | serial_lsb;
+        *result = ((uint32_t)serial_msb << 16) | serial_lsb;
+        return HAL_OK;
     }
 
     return HAL_ERROR;

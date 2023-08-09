@@ -48,9 +48,9 @@ typedef struct {
  * Measurement Precision Levels
  */
 typedef enum {
-    HIGH_PRECISION, /* Low repeatability */
-    MED_PRECISION, /* Medium repeatability */
-    LOW_PRECISION /* High repeatability */
+    HIGH_PRECISION = SHT40_HI_PREC_MEASURE,  /* Low repeatability */
+    MED_PRECISION  = SHT40_MED_PREC_MEASURE, /* Medium repeatability */
+    LOW_PRECISION  = SHT40_LOW_PREC_MEASURE  /* High repeatability */
 } SHT40_Precision;
 
 /*
@@ -81,12 +81,12 @@ HAL_StatusTypeDef SHT40_Measure(const I2C_HandleTypeDef* i2cHandle, SHT40_Measur
  * Heater Control
  * SHT40_Measurement is optional (may be provided as NULL)
  */
-HAL_StatusTypeDef SHT40_Heat(const I2C_HandleTypeDef* i2cHandle, SHT40_Measurement* result, SHT40_HeaterOption option);
+HAL_StatusTypeDef SHT40_Heat(const I2C_HandleTypeDef* i2cHandle, SHT40_Measurement* result, SHT40_HeaterOption heat_option);
 
 /*
  * Reset/Serial
  */
 HAL_StatusTypeDef SHT40_SoftReset(const I2C_HandleTypeDef* i2cHandle);
-uint32_t SHT40_ReadSerial(const I2C_HandleTypeDef* i2cHandle);
+HAL_StatusTypeDef SHT40_ReadSerial(const I2C_HandleTypeDef* i2cHandle);
 
 #endif /* INC_SHT40_H_ */
