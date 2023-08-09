@@ -79,13 +79,20 @@ uint32_t SHT40_ReadSerial(const I2C_HandleTypeDef* i2cHandle) {
     uint8_t serial_response[6];
 
     if(
-        HAL_I2C_Master_Transmit(i2cHandle, SHT40_I2C_ADDR, &command, 1, SHT40_I2C_TIMEOUT) == HAL_OK &&
-        HAL_I2C_Master_Receive(i2cHandle, SHT40_I2C_ADDR, serial_response, SHT40_I2C_RESP_LEN, SHT40_I2C_TIMEOUT) == HAL_OK
+        HAL_I2C_Master_Transmit(i2cHandle, SHT40_I2C_ADDR, &command, 1, SHT40_I2C_TIMEOUT) != HAL_OK ||
+        HAL_I2C_Master_Receive(i2cHandle, SHT40_I2C_ADDR, serial_response, SHT40_I2C_RESP_LEN, SHT40_I2C_TIMEOUT) != HAL_OK
     ) {
-        // TODO
-    } else {
         return HAL_ERROR;
     }
+
+    uint16_t serial_msb = serial_response[0] << 8 | serial_response[1];
+    uint16_t serial_lsb = serial_response[3] << 8 | serial_response[4];
+
+    if( verify_checksum(serial_msb, serial_response[2]) && verify_checksum(serial_lsb, serial_response[5]) ) {
+        return ((uint32_t)serial_msb << 16) | serial_lsb;
+    }
+
+    return HAL_ERROR;
 }
 
 /*
