@@ -9,8 +9,8 @@
  * Static function prototypes
  */
 static bool verify_checksum(uint16_t data, uint8_t checksum);
-static float hardware_to_celsius(uint8_t reading);
-static float hardware_to_humidity_percentage(uint8_t reading);
+static float hardware_to_celsius(uint16_t reading);
+static float hardware_to_humidity_percentage(uint16_t reading);
 
 /*
  * LUT for CRC8 with polynomial 0x31
@@ -53,24 +53,60 @@ static const uint8_t CRC8_TABLE[256] = {
 /*
  * Measurement-Taking
  */
-HAL_StatusTypeDef SHT40_Measure(const I2C_HandleTypeDef* i2cHandle, SHT40_Measurement* result, SHT40_Precision precision) {
+HAL_StatusTypeDef SHT40_Measure(I2C_HandleTypeDef* i2cHandle, SHT40_Measurement* result, SHT40_Precision precision) {
+    uint8_t response[6];
 
+    if(
+        HAL_I2C_Master_Transmit(i2cHandle, SHT40_I2C_ADDR, (uint8_t*)&precision, 1, SHT40_I2C_TIMEOUT) != HAL_OK ||
+        HAL_I2C_Master_Receive(i2cHandle, SHT40_I2C_ADDR, response, SHT40_I2C_RESP_LEN, SHT40_I2C_TIMEOUT) != HAL_OK
+    ) {
+        return HAL_ERROR;
+    }
+
+    uint16_t temperature = response[0] << 8 | response[1];
+    uint16_t humidity = response[3] << 8 | response[4];
+
+    if( verify_checksum(temperature, response[2]) && verify_checksum(humidity, response[5]) ) {
+        result->temperature = hardware_to_celsius(temperature);
+        result->rel_humidity = hardware_to_humidity_percentage(humidity);
+        return HAL_OK;
+    }
+
+    return HAL_ERROR;
 }
 
 /*
  * Heater Control
  */
-HAL_StatusTypeDef SHT40_Heat(const I2C_HandleTypeDef* i2cHandle, SHT40_Measurement* result, SHT40_HeaterOption heat_option) {
+HAL_StatusTypeDef SHT40_Heat(I2C_HandleTypeDef* i2cHandle, SHT40_Measurement* result, SHT40_HeaterOption heat_option) {
+    uint8_t response[6];
 
+    if(
+        HAL_I2C_Master_Transmit(i2cHandle, SHT40_I2C_ADDR, (uint8_t*)&heat_option, 1, SHT40_I2C_TIMEOUT) != HAL_OK ||
+        HAL_I2C_Master_Receive(i2cHandle, SHT40_I2C_ADDR, response, SHT40_I2C_RESP_LEN, SHT40_I2C_TIMEOUT) != HAL_OK
+    ) {
+        return HAL_ERROR;
+    }
+
+    uint16_t temperature = response[0] << 8 | response[1];
+    uint16_t humidity = response[3] << 8 | response[4];
+
+    if( verify_checksum(temperature, response[2]) && verify_checksum(humidity, response[5]) ) {
+        result->temperature = hardware_to_celsius(temperature);
+        result->rel_humidity = hardware_to_humidity_percentage(humidity);
+        return HAL_OK;
+    }
+
+    return HAL_ERROR;
 }
 
 /*
  * Reset
  */
-HAL_StatusTypeDef SHT40_SoftReset(const I2C_HandleTypeDef* i2cHandle) {
-    static const uint8_t command = SHT40_SOFT_RESET;
+HAL_StatusTypeDef SHT40_SoftReset(I2C_HandleTypeDef* i2cHandle) {
+    static uint8_t COMMAND = SHT40_SOFT_RESET;
 
-    if( HAL_I2C_Master_Transmit(i2cHandle, SHT40_I2C_ADDR, &command, 1, SHT40_I2C_TIMEOUT) != HAL_OK ) {
+    if( HAL_I2C_Master_Transmit(i2cHandle, SHT40_I2C_ADDR, &COMMAND, 1, SHT40_I2C_TIMEOUT) != HAL_OK ) {
         return HAL_ERROR;
     } else {
         return HAL_OK;
@@ -80,12 +116,12 @@ HAL_StatusTypeDef SHT40_SoftReset(const I2C_HandleTypeDef* i2cHandle) {
 /*
  * Serial
  */
-HAL_StatusTypeDef SHT40_ReadSerial(const I2C_HandleTypeDef* i2cHandle, uint32_t* result) {
-    static const uint8_t command = SHT40_READ_SERIAL;
+HAL_StatusTypeDef SHT40_ReadSerial(I2C_HandleTypeDef* i2cHandle, uint32_t* result) {
+    static uint8_t COMMAND = SHT40_READ_SERIAL;
     uint8_t serial_response[6];
 
     if(
-        HAL_I2C_Master_Transmit(i2cHandle, SHT40_I2C_ADDR, &command, 1, SHT40_I2C_TIMEOUT) != HAL_OK ||
+        HAL_I2C_Master_Transmit(i2cHandle, SHT40_I2C_ADDR, &COMMAND, 1, SHT40_I2C_TIMEOUT) != HAL_OK ||
         HAL_I2C_Master_Receive(i2cHandle, SHT40_I2C_ADDR, serial_response, SHT40_I2C_RESP_LEN, SHT40_I2C_TIMEOUT) != HAL_OK
     ) {
         return HAL_ERROR;

@@ -70,23 +70,23 @@ typedef enum {
  * Determines whether a successful I2C connection has been made by reading
  * the serial number of the device and calculating the CRC8 checksum
  */
-HAL_StatusTypeDef SHT40_Initialize(const I2C_HandleTypeDef* i2cHandle);
+HAL_StatusTypeDef SHT40_Initialize(I2C_HandleTypeDef* i2cHandle);
 
 /*
  * Measurement-Taking
  */
-HAL_StatusTypeDef SHT40_Measure(const I2C_HandleTypeDef* i2cHandle, SHT40_Measurement* result, SHT40_Precision precision);
+HAL_StatusTypeDef SHT40_Measure(I2C_HandleTypeDef* i2cHandle, SHT40_Measurement* result, SHT40_Precision precision);
 
 /*
  * Heater Control
  * SHT40_Measurement is optional (may be provided as NULL)
  */
-HAL_StatusTypeDef SHT40_Heat(const I2C_HandleTypeDef* i2cHandle, SHT40_Measurement* result, SHT40_HeaterOption heat_option);
+HAL_StatusTypeDef SHT40_Heat(I2C_HandleTypeDef* i2cHandle, SHT40_Measurement* result, SHT40_HeaterOption heat_option);
 
 /*
  * Reset/Serial
  */
-HAL_StatusTypeDef SHT40_SoftReset(const I2C_HandleTypeDef* i2cHandle);
-HAL_StatusTypeDef SHT40_ReadSerial(const I2C_HandleTypeDef* i2cHandle);
+HAL_StatusTypeDef SHT40_SoftReset(I2C_HandleTypeDef* i2cHandle);
+HAL_StatusTypeDef SHT40_ReadSerial(I2C_HandleTypeDef* i2cHandle, uint32_t* result);
 
 #endif /* INC_SHT40_H_ */
