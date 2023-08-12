@@ -66,13 +66,6 @@ typedef enum {
 } SHT40_HeaterOption;
 
 /*
- * Initialization
- * Determines whether a successful I2C connection has been made by reading
- * the serial number of the device and calculating the CRC8 checksum
- */
-HAL_StatusTypeDef SHT40_Initialize(I2C_HandleTypeDef* i2cHandle);
-
-/*
  * Measurement-Taking
  */
 HAL_StatusTypeDef SHT40_Measure(I2C_HandleTypeDef* i2cHandle, SHT40_Measurement* result, SHT40_Precision precision);
