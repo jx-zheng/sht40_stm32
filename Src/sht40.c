@@ -123,12 +123,13 @@ static bool verify_checksum(uint16_t data, uint8_t checksum) {
  * Common I2C communication function
  */
 static HAL_StatusTypeDef i2c_communicate(I2C_HandleTypeDef* i2cHandle, uint8_t* command, uint8_t* response) {
-    if(
-        HAL_I2C_Master_Transmit(i2cHandle, SHT40_I2C_ADDR, command, 1, SHT40_I2C_TIMEOUT) != HAL_OK ||
-        HAL_I2C_Master_Receive(i2cHandle, SHT40_I2C_ADDR, response, SHT40_I2C_RESP_LEN, SHT40_I2C_TIMEOUT) != HAL_OK
-    ) {
+    HAL_StatusTypeDef status = HAL_I2C_Master_Transmit(i2cHandle, SHT40_I2C_ADDR, command, 1, SHT40_I2C_TIMEOUT);
+    if (status != HAL_OK)
         return HAL_ERROR;
-    }
+    HAL_Delay(10);
+    status = HAL_I2C_Master_Receive(i2cHandle, SHT40_I2C_ADDR, response, SHT40_I2C_RESP_LEN, SHT40_I2C_TIMEOUT);
+    if (status != HAL_OK)
+        return HAL_ERROR;
     return HAL_OK;
 }
 
